@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Define backup directory
+BACKUP_DIR="/var/backups/home_backups"
+mkdir -p "$BACKUP_DIR"
+
+# Set timestamp
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+
+# User home directory
+USER_HOME="$HOME"
+BACKUP_FILE="$BACKUP_DIR/${USER}_home_backup_$TIMESTAMP.tar.gz"
+
+# Create backup
+tar -czf "$BACKUP_FILE" "$USER_HOME" 2>/dev/null
+
+# Limit number of backups to last 5
+cd "$BACKUP_DIR" || exit
+ls -t | grep "${USER}_home_backup_" | sed -e '1,5d' | xargs -r -d '\n' rm -f
+
+# Log the backup
+echo "Backup created at $TIMESTAMP: $BACKUP_FILE" >> "$BACKUP_DIR/backup.log"
+
+# Automatically add this script to ~/.bash_logout if not already added
+BASH_LOGOUT="$HOME/.bash_logout"
+SCRIPT_PATH="$HOME/backup_home.sh"
+
+# Check if ~/.bash_logout exists, if not create it
+if [ ! -f "$BASH_LOGOUT" ]; then
+    touch "$BASH_LOGOUT"
+fi
+
+# Add the script call to .bash_logout if not already there
+if ! grep -Fxq "$SCRIPT_PATH" "$BASH_LOGOUT"; then
+    echo "" >> "$BASH_LOGOUT"
+    echo "# Backup home directory on logout" >> "$BASH_LOGOUT"
+    echo "$SCRIPT_PATH" >> "$BASH_LOGOUT"
+fi
+

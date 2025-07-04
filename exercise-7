@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Input file with list of IPs
+IP_LIST_FILE="ip_list.txt"
+
+# Output log directory
+LOG_DIR="./exercise-7-logs"
+mkdir -p "$LOG_DIR"
+
+# Get hostname and current date
+HOSTNAME=$(hostname)
+DATE=$(date +"%Y-%m-%d")
+
+# Output log file path
+LOG_FILE="$LOG_DIR/pinglog_${HOSTNAME}_${DATE}.log"
+
+# Header
+echo "Ping Results - Host: $HOSTNAME - Date: $DATE" | tee "$LOG_FILE"
+echo "---------------------------------------------" | tee -a "$LOG_FILE"
+
+# Read each IP and ping
+while IFS= read -r ip; do
+    if [[ -n "$ip" ]]; then
+        echo "Pinging $ip..." | tee -a "$LOG_FILE"
+        ping -c 3 "$ip" 2>&1 | tee -a "$LOG_FILE"
+        echo "---------------------------------------------" | tee -a "$LOG_FILE"
+    fi
+done < "$IP_LIST_FILE"
+
+echo " Log saved to: $LOG_FILE"
+
