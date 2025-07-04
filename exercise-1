@@ -1,0 +1,26 @@
+#!/bin/bash
+
+while true; do
+    read -p "Enter a number: " input
+
+    # Remove digits and minus sign from input using tr
+    non_digits=$(echo "$input" | tr -d '0-9-')
+
+    # If non_digits is empty, it's a valid integer
+    if [ -z "$non_digits" ] && [[ "$input" =~ ^-?[0-9]+$ ]]; then
+        number=$input
+        break
+    else
+        echo "Invalid input. Please enter a number."
+    fi
+done
+
+# Compare with 10
+if [ "$number" -gt 10 ]; then
+    echo "The number is larger than 10."
+elif [ "$number" -eq 10 ]; then
+    echo "The number is equal to 10."
+else
+    echo "The number is smaller than 10."
+fi
+

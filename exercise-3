@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Prompt for server IP
+read -p "Enter server IP: " server_ip
+
+# Prompt for username
+read -p "Enter username: " username
+
+# Prompt for password (hidden)
+read -s -p "Enter password: " password
+echo  # new line after hidden input
+
+# Prompt for port with default value 22
+read -p "Enter SSH port (default is 22): " port
+port=${port:-22}  # If empty, default to 22
+
+# Ping the server
+ping -c 1 -W 2 "$server_ip" > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "✅ Server is reachable."
+
+    # Set destination path based on username
+    if [ "$username" == "root" ]; then
+        remote_path="/root/"
+    else
+        remote_path="/home/$username/"
+    fi
+
+    echo "📤 Transferring /etc/passwd to $username@$server_ip:$remote_path using port $port"
+
+    # Use sshpass with scp and custom port
+    sshpass -p "$password" scp -P "$port" /etc/passwd "$username@$server_ip:$remote_path"
+
+    if [ $? -eq 0 ]; then
+        echo "✅ File successfully transferred."
+    else
+        echo "❌ File transfer failed. Check credentials, port, or remote permissions."
+    fi
+else
+    echo "❌ Server is not accessible (ping failed)."
+fi
+

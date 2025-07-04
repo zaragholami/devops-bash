@@ -1,0 +1,32 @@
+#!/bin/bash
+
+count=0
+max=
+min=
+
+while [ $count -lt 20 ]; do
+    read -p "Enter number $((count + 1)): " input
+
+    # Use tr to remove digits and minus sign to check if input is valid
+    non_digits=$(echo "$input" | tr -d '0-9-')
+
+    if [ -z "$non_digits" ] && [[ "$input" =~ ^-?[0-9]+$ ]]; then
+        number=$input
+
+        # Initialize max and min on the first number
+        if [ -z "$max" ] || [ "$number" -gt "$max" ]; then
+            max=$number
+        fi
+        if [ -z "$min" ] || [ "$number" -lt "$min" ]; then
+            min=$number
+        fi
+
+        count=$((count + 1))
+    else
+        echo "Invalid input. Please enter a valid number."
+    fi
+done
+
+echo "The largest number is: $max"
+echo "The smallest number is: $min"
+
