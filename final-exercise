@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Function to validate IPv4 address using regex
+is_valid_ipv4() {
+    local ip="$1"
+    [[ $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || return 1
+
+    IFS='.' read -r -a octets <<< "$ip"
+    for octet in "${octets[@]}"; do
+        if (( octet < 0 || octet > 255 )); then
+            return 1
+        fi
+    done
+    return 0
+}
+
+# Ask user for input until correct IPv4 format
+while true; do
+    read -p "Enter a valid IPv4 address: " ip
+    if is_valid_ipv4 "$ip"; then
+        break
+    else
+        echo "❌ Invalid IPv4 format. Please try again."
+    fi
+done
+
+# Ping the IP 5 times
+echo "Pinging $ip ..."
+PING_OUTPUT=$(ping -c 5 "$ip" 2>/dev/null)
+
+# Check if ping was successful
+if echo "$PING_OUTPUT" | grep -q "bytes from"; then
+    echo "✅ IP is pingable."
+
+    # Extract average time using awk
+    AVG_TIME=$(echo "$PING_OUTPUT" | grep "rtt" | awk -F'/' '{print $5}')
+    echo "📊 Average ping time: ${AVG_TIME} ms"
+else
+    echo "❌ IP is unreachable."
+fi
+
